@@ -481,6 +481,7 @@ GRANDFATHERED_USER_MODULES += \
 	sqlite3 \
 	stack_dump \
 	stringtemplate \
+	su \
 	surfaceflinger \
 	svc \
 	swing-worker-1.1 \
