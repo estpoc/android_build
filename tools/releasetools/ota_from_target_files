@@ -83,6 +83,7 @@ OPTIONS.omit_prereq = False
 OPTIONS.extra_script = None
 OPTIONS.script_mode = 'auto'
 OPTIONS.worker_threads = 3
+OPTIONS.system_with_prebuilt_boot_image = True
 
 def MostPopularKey(d, default):
   """Given a dict, return the key corresponding to the largest
@@ -380,23 +381,26 @@ def WriteFullOTAPackage(input_zip, output_zip):
 
   script.FormatPartition("system")
   script.Mount("MTD", "system", "/system")
-  script.UnpackPackageDir("recovery", "/system")
+  if not OPTIONS.system_with_prebuilt_boot_image:
+    script.UnpackPackageDir("recovery", "/system")
   script.UnpackPackageDir("system", "/system")
 
   symlinks = CopySystemFiles(input_zip, output_zip)
   script.MakeSymlinks(symlinks)
 
-  boot_img = File("boot.img", common.BuildBootableImage(
-      os.path.join(OPTIONS.input_tmp, "BOOT")))
-  recovery_img = File("recovery.img", common.BuildBootableImage(
-      os.path.join(OPTIONS.input_tmp, "RECOVERY")))
-  MakeRecoveryPatch(output_zip, recovery_img, boot_img)
+  if not OPTIONS.system_with_prebuilt_boot_image:
+    boot_img = File("boot.img", common.BuildBootableImage(
+        os.path.join(OPTIONS.input_tmp, "BOOT")))
+    recovery_img = File("recovery.img", common.BuildBootableImage(
+        os.path.join(OPTIONS.input_tmp, "RECOVERY")))
+    MakeRecoveryPatch(output_zip, recovery_img, boot_img)
 
   Item.GetMetadata(input_zip)
   Item.Get("system").SetPermissions(script)
 
-  common.CheckSize(boot_img.data, "boot.img")
-  common.ZipWriteStr(output_zip, "boot.img", boot_img.data)
+  if not OPTIONS.system_with_prebuilt_boot_image:
+    common.CheckSize(boot_img.data, "boot.img")
+    common.ZipWriteStr(output_zip, "boot.img", boot_img.data)
   script.ShowProgress(0.2, 0)
 
   script.ShowProgress(0.2, 10)
