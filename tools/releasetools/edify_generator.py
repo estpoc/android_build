@@ -175,7 +175,7 @@ class EdifyGenerator(object):
                          (p.fs_type, common.PARTITION_TYPES[p.fs_type], p.device))
     else:
       # older target-files without per-partition types
-      partition = self.info.get("partition_path", "") + partition
+      partition = self.info.get("partition_path", "") + partition.lstrip("/")
       self.script.append('format("%s", "%s", "%s");' %
                          (self.info["fs_type"], self.info["partition_type"],
                           partition))
