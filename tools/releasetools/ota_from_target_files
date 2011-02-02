@@ -75,7 +75,7 @@ OPTIONS.wipe_user_data = False
 OPTIONS.omit_prereq = False
 OPTIONS.extra_script = None
 OPTIONS.worker_threads = 3
-OPTIONS.system_with_prebuilt_boot_image = True
+OPTIONS.use_prebuilt_images = True
 
 def MostPopularKey(d, default):
   """Given a dict, return the key corresponding to the largest
@@ -376,14 +376,14 @@ def WriteFullOTAPackage(input_zip, output_zip):
 
   script.FormatPartition("/system")
   script.Mount("/system")
-  if not OPTIONS.system_with_prebuilt_boot_image:
+  if not OPTIONS.use_prebuilt_images:
     script.UnpackPackageDir("recovery", "/system")
   script.UnpackPackageDir("system", "/system")
 
   symlinks = CopySystemFiles(input_zip, output_zip)
   script.MakeSymlinks(symlinks)
 
-  if not OPTIONS.system_with_prebuilt_boot_image:
+  if not OPTIONS.use_prebuilt_images:
     boot_img = common.File("boot.img", common.BuildBootableImage(
         os.path.join(OPTIONS.input_tmp, "BOOT")))
     recovery_img = common.File("recovery.img", common.BuildBootableImage(
@@ -393,13 +393,19 @@ def WriteFullOTAPackage(input_zip, output_zip):
   Item.GetMetadata(input_zip)
   Item.Get("system").SetPermissions(script)
 
-  if not OPTIONS.system_with_prebuilt_boot_image:
+  if not OPTIONS.use_prebuilt_images:
     common.CheckSize(boot_img.data, "boot.img", OPTIONS.info_dict)
     common.ZipWriteStr(output_zip, "boot.img", boot_img.data)
   script.ShowProgress(0.2, 0)
 
   script.ShowProgress(0.2, 10)
   script.WriteRawImage("/boot", "boot.img")
+
+  if OPTIONS.use_prebuilt_images:
+    script.ShowProgress(0.2, 10)
+    script.WriteRawImage("/bpsw", "bpsw.img")
+    script.ShowProgress(0.2, 10)
+    script.WriteRawImage("/devtree", "devtree.img")
 
   script.ShowProgress(0.1, 0)
   device_specific.FullOTA_InstallEnd()
