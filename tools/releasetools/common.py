@@ -781,5 +781,7 @@ def GetTypeAndDevice(mount_point, info):
                "/recovery": "recovery",
                "/radio": "radio",
                "/data": "userdata",
-               "/cache": "cache"}
+               "/cache": "cache",
+               "/bpsw": "bpsw",
+               "/devtree": "devtree" }
     return info["partition_type"], info.get("partition_path", "") + devices[mount_point]
